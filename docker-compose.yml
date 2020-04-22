@@ -5,14 +5,12 @@ version: "3"
 services:
 
   web:
-    build: ~/dev/lregulon2 
     image: owlmx/lisen_web:2.0.0
     ports:
       - ${WEB_PORT:-8100}:80
       # - 8100:80
 
   ilink-api:
-    build: ~/IdeaProjects/interlink-api
     image: owlmx/lisen_ilink-api:0.5.0
     ports:
       - "${API_PORT:-8080}:8080"
@@ -79,7 +77,6 @@ services:
       - lisen_esdata:/usr/share/elasticsearch/data
 
   scripthub:
-    build: ./scripthub
     image: owlmx/lisen_scripthub:0.3.0
     volumes:
       - ./input-files:/app/data/input

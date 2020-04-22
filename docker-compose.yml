@@ -1,0 +1,117 @@
+version: "3"
+
+# v2.0.1 LiSEN components
+
+services:
+
+  web:
+    build: ~/dev/lregulon2 
+    image: owlmx/lisen_web:2.0.0
+    ports:
+      - ${WEB_PORT:-8100}:80
+      # - 8100:80
+
+  ilink-api:
+    build: ~/IdeaProjects/interlink-api
+    image: owlmx/lisen_ilink-api:0.5.0
+    ports:
+      - "${API_PORT:-8080}:8080"
+      # - "8080:8080"
+    volumes:
+      - ./pubs-files:/mnt/pubs-files
+      # - pubs-files:/mnt/pubs-files
+    depends_on:
+     - mongo-db
+     - ilinks-db
+     - elastic
+    environment:
+      spring_data_mongodb_host : mongo-db
+      interlinks_ssdb_host: ilinks-db:8888
+      interlinks_elastic_host: elastic:9200
+      lisen_nlp_sourcefiles_path: "/mnt/pubs-files"
+      lisen_nlp_pdffiles_path: "/mnt/pubs-files"
+
+  mongo-db: 
+    # image: mongo:3.6.17-xenial
+    image: mvertes/alpine-mongo
+    ports:
+    - "${MONGO_PORT:-27017}:27017"
+    # - "27017:27017"
+
+  ilinks-db:
+    image: leobuskin/ssdb-docker
+    ports:
+      - ${SSDB_PORT:-8888}:8888
+      # - 8888:8888
+    volumes:
+      - ./ssdb-data:/ssdb/var
+      # - ilinks-data:/ssdb/var
+
+  elastic:
+    # image: elasticsearch:6.8.8
+    image: owlmx/lisen_elasticsearch:7.6.2
+    environment:
+      - cluster.name=lcovid
+      - discovery.type=single-node
+      # - "path.data=/usr/share/elasticsearch/data/6.8.8"
+      # - xpack.security.enabled=false
+      # - bootstrap.memory_lock=true
+      # - network.host=0.0.0.0
+      # - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    # ulimits:
+    #   memlock:
+    #     soft: -1
+    #     hard: -1
+    # mem_limit: 2g
+    # logging:
+    #   driver: 'json-file'
+    #   options:
+    #     max-size: '2m'
+    #     max-file: '5'
+    ports:
+      - ${ELASTIC_PORT:-9200}:9200
+      # - 9200:9200
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+      retries: 10
+      interval: 20s
+    volumes:
+      - lisen_esdata:/usr/share/elasticsearch/data
+
+  scripthub:
+    build: ./scripthub
+    image: owlmx/lisen_scripthub:0.3.0
+    volumes:
+      - ./input-files:/app/data/input
+      - ./cols-files:/app/data/cols
+      - ./pubs-files:/app/data/repo
+    restart: always
+    # deploy:
+    #   restart_policy:
+    #     condition: on-failure
+        # delay: 5s
+        # max_attempts: 3
+        # window: 20s
+
+# volumes:
+
+volumes:
+  # ssdb-data:
+  #   /ssdb/var
+  # ilinks-data:
+  #   driver: local
+  #   driver_opts:
+  #     o: bind
+  #     type: none
+  #     device: "./ssdb-data"
+  lisen_esdata:
+    driver: local
+  # pubs-files:
+  #   driver: local
+  #   driver_opts:
+  #     o: bind
+  #     type: none      
+  #     device: "/home/owlmx/dockers/lcovid19/pubs-files"
+# networks:
+#   front-tier:
+#   back-tier:

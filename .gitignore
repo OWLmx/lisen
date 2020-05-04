@@ -1,7 +1,10 @@
 
 build.docker-compose.yml
+.env
 cols-files/ 
 input-files/  
 pubs-files/  
 scripthub/ 
 ssdb-data/
+__pycache__
+*.pyc

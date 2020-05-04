@@ -5,13 +5,18 @@ version: "3"
 services:
 
   web:
-    image: owlmx/lisen_web:2.0.0
+    image: owlmx/lisen_web:2.1.0
+    environment:
+      API_URL: ${WEB_API_URL}
+      PDFS_URL: ${WEB_PDFS_URL}
+      PROJECT_TITLE: ${WEB_PROJECT_TITLE:-L-COVID}
+      PROJECT_LOGO: ${WEB_PROJECT_LOGO}
     ports:
       - ${WEB_PORT:-8100}:80
       # - 8100:80
 
   ilink-api:
-    image: owlmx/lisen_ilink-api:0.5.0
+    image: owlmx/lisen_ilink-api:0.6.0
     ports:
       - "${API_PORT:-8080}:8080"
       # - "8080:8080"
@@ -28,19 +33,31 @@ services:
       interlinks_elastic_host: elastic:9200
       lisen_nlp_sourcefiles_path: "/mnt/pubs-files"
       lisen_nlp_pdffiles_path: "/mnt/pubs-files"
+      interlinks_elastic_sentidsep: "::"
+      spring_data_mongodb_database: "lisen"
+      spring_data_mongodb_authentication-database: "lisen"
+      spring_data_mongodb_username: "lisen"
+      spring_data_mongodb_password: "083Hgsrt_4yX"
 
   mongo-db: 
+    image: mongo:latest
     # image: mongo:3.6.17-xenial
-    image: mvertes/alpine-mongo
+    # image: mvertes/alpine-mongo # initialization scripts do not work
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-Mictlanc1huatl}
+      MONGO_INITDB_DATABASE: lisen
     ports:
     - "${MONGO_PORT:-27017}:27017"
     # - "27017:27017"
+    volumes:
+      - ./inits/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - lisen_mongodata:/data/db
 
   ilinks-db:
     image: leobuskin/ssdb-docker
     ports:
       - ${SSDB_PORT:-8888}:8888
-      # - 8888:8888
     volumes:
       - ./ssdb-data:/ssdb/var
       # - ilinks-data:/ssdb/var
@@ -77,12 +94,15 @@ services:
       - lisen_esdata:/usr/share/elasticsearch/data
 
   scripthub:
-    image: owlmx/lisen_scripthub:0.3.0
+    image: owlmx/lisen_scripthub:0.5.0
     volumes:
       - ./input-files:/app/data/input
       - ./cols-files:/app/data/cols
       - ./pubs-files:/app/data/repo
-    restart: always
+    environment:
+      ilinks_db_host: "ilinks-db:8888"
+    restart: unless-stopped
+    # restart: always
     # deploy:
     #   restart_policy:
     #     condition: on-failure
@@ -101,7 +121,9 @@ volumes:
   #     o: bind
   #     type: none
   #     device: "./ssdb-data"
-  lisen_esdata:
+  lisen_esdata:  
+    driver: local
+  lisen_mongodata:
     driver: local
   # pubs-files:
   #   driver: local

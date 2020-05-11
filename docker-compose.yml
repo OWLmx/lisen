@@ -5,18 +5,21 @@ version: "3"
 services:
 
   web:
-    image: owlmx/lisen_web:2.1.0
+    image: owlmx/lisen_web:2.1.1
     environment:
       API_URL: ${WEB_API_URL}
       PDFS_URL: ${WEB_PDFS_URL}
       PROJECT_TITLE: ${WEB_PROJECT_TITLE:-L-COVID}
       PROJECT_LOGO: ${WEB_PROJECT_LOGO}
+      MENUS_ENABLED: ${WEB_MENUS_ENABLED}
     ports:
       - ${WEB_PORT:-8100}:80
       # - 8100:80
+    volumes:
+      - ./pubs-files:/mnt/pubs-files
 
   ilink-api:
-    image: owlmx/lisen_ilink-api:0.6.0
+    image: owlmx/lisen_ilink-api:0.6.1
     ports:
       - "${API_PORT:-8080}:8080"
       # - "8080:8080"
@@ -94,7 +97,7 @@ services:
       - lisen_esdata:/usr/share/elasticsearch/data
 
   scripthub:
-    image: owlmx/lisen_scripthub:0.5.0
+    image: owlmx/lisen_scripthub:0.5.1
     volumes:
       - ./input-files:/app/data/input
       - ./cols-files:/app/data/cols

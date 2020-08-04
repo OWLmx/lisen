@@ -2,6 +2,11 @@ version: "3"
 
 # v2.0.1 LiSEN components
 
+#If running container with specific user
+# export UID=$(id -u)
+# export GID=$(id -g)
+# docker-compose up
+
 services:
 
   web:
@@ -19,7 +24,7 @@ services:
       - ./pubs-files:/mnt/pubs-files
 
   ilink-api:
-    image: owlmx/lisen_ilink-api:0.6.1
+    image: owlmx/lisen_ilink-api:0.6.2
     ports:
       - "${API_PORT:-8080}:8080"
       # - "8080:8080"
@@ -39,8 +44,10 @@ services:
       interlinks_elastic_sentidsep: "::"
       spring_data_mongodb_database: "lisen"
       spring_data_mongodb_authentication-database: "lisen"
-      spring_data_mongodb_username: "lisen"
-      spring_data_mongodb_password: "083Hgsrt_4yX"
+      spring_data_mongodb_username: ${MONGODB_USERNAME}
+      spring_data_mongodb_password: ${MONGODB_PASSWORD}
+      interlinks_elastic_user: "elastic"
+      interlinks_elastic_pwd: ${ELASTIC_PASSWORD}
 
   mongo-db: 
     image: mongo:latest
@@ -97,13 +104,18 @@ services:
       - lisen_esdata:/usr/share/elasticsearch/data
 
   scripthub:
-    image: owlmx/lisen_scripthub:0.5.1
+    image: owlmx/lisen_scripthub:0.5.2
+    # user: "${UID}:${GID}"
     volumes:
       - ./input-files:/app/data/input
       - ./cols-files:/app/data/cols
       - ./pubs-files:/app/data/repo
     environment:
       ilinks_db_host: "ilinks-db:8888"
+      el_usr: ${ELASTIC_USERNAME}
+      el_pwd: ${ELASTIC_PASSWORD}
+      # assign created files operational group (e.g. lregulon)
+      gid: ${CREATEDFILES_GROUPID}
     restart: unless-stopped
     # restart: always
     # deploy:

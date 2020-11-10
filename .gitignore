@@ -9,3 +9,4 @@ ssdb-data/
 __pycache__
 *.pyc
 *.ogertsv
+bak*/

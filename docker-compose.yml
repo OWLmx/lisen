@@ -1,6 +1,6 @@
 version: "3"
 
-# v2.0.1 LiSEN components
+# v2.0.2 LiSEN components
 
 #If running container with specific user
 # export UID=$(id -u)
@@ -104,12 +104,13 @@ services:
       - lisen_esdata:/usr/share/elasticsearch/data
 
   scripthub:
-    image: owlmx/lisen_scripthub:0.5.2
+    image: owlmx/lisen_scripthub:0.5.3
     # user: "${UID}:${GID}"
     volumes:
       - ./input-files:/app/data/input
       - ./cols-files:/app/data/cols
       - ./pubs-files:/app/data/repo
+      - ./ssdb-data:/app/data/ssdb
     environment:
       ilinks_db_host: "ilinks-db:8888"
       el_usr: ${ELASTIC_USERNAME}

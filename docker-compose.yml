@@ -24,7 +24,7 @@ services:
       - ./pubs-files:/mnt/pubs-files
 
   ilink-api:
-    image: owlmx/lisen_ilink-api:0.6.2
+    image: owlmx/lisen_ilink-api:0.7.0
     ports:
       - "${API_PORT:-8080}:8080"
       # - "8080:8080"
@@ -104,7 +104,7 @@ services:
       - lisen_esdata:/usr/share/elasticsearch/data
 
   scripthub:
-    image: owlmx/lisen_scripthub:0.5.3
+    image: owlmx/lisen_scripthub:0.7.1
     # user: "${UID}:${GID}"
     volumes:
       - ./input-files:/app/data/input
